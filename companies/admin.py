@@ -1,3 +1,4 @@
 from django.contrib import admin
+from companies.models import Company, Tag, Language, CompanyKeyVal, TagKeyVal
 
-# Register your models here.
+admin.site.register([Company, Tag, Language, CompanyKeyVal, TagKeyVal])
