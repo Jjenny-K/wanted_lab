@@ -10,6 +10,7 @@ django.setup()
 
 from django.conf import settings
 from companies.models import Company, Tag, Language, CompanyName
+from companies.utils import get_tag_list
 
 # db upload path
 base_path = settings.DATA_ROOT
@@ -78,20 +79,6 @@ def insert_tags():
     print("Tag UPLOADED SUCCESS!")
 
 
-def set_list(data):
-    """ tag_name split to list """
-    return data.split('|')
-
-
-def get_tag(data):
-    """ tag object """
-    tag_list = []
-    for idx, value in enumerate(set_list(data)):
-        tag_list.append(Tag.objects.get(name=value))
-
-    return tag_list
-
-
 def insert_company():
     """
         # companies.Company + CompanyName
@@ -129,9 +116,12 @@ def insert_company():
 
                 # ManyToManyField 'tags' insert
                 # CompanyName, Tag 사이의 중간테이블에 .add()로 tag data 추가
-                CompanyName.objects.filter(language=language_ko).latest('company').tags.add(*get_tag(row['tag_ko']))
-                CompanyName.objects.filter(language=language_en).latest('company').tags.add(*get_tag(row['tag_en']))
-                CompanyName.objects.filter(language=language_ja).latest('company').tags.add(*get_tag(row['tag_ja']))
+                CompanyName.objects.filter(language=language_ko).latest('company')\
+                    .tags.add(*get_tag_list(row['tag_ko'].split('|')))
+                CompanyName.objects.filter(language=language_en).latest('company')\
+                    .tags.add(*get_tag_list(row['tag_en'].split('|')))
+                CompanyName.objects.filter(language=language_ja).latest('company')\
+                    .tags.add(*get_tag_list(row['tag_ja'].split('|')))
 
     print("Company Info UPLOADED SUCCESS!")
 

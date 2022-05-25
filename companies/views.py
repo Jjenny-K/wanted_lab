@@ -7,7 +7,7 @@ from django.db.models import Q
 from rest_framework import views, status
 from rest_framework.response import Response
 
-from companies.models import Company, Language, Tag, CompanyName
+from companies.models import Company, Language, CompanyName
 from companies.serializers import CompanyNameListSerializers, CompanyNameAutoCompleteSerializers
 from companies.utils import *
 
@@ -16,25 +16,18 @@ class CompanyListView(views.APIView):
     def get_list(self, language):
         return get_list_or_404(CompanyName, language=language)
 
-    def get_tag_list(self, data):
-        tag_list = []
-        for idx, value in enumerate(data):
-            tag_list.append(Tag.objects.get(name=value))
-
-        return tag_list
-
     def get(self, request):
         """
             GET api/companies
             회사 리스트 검색
         """
         # request.headers 'x-wanted-language' 값과 맞는 language object 검색 후 예외처리
-        language, language_obj, error, has_error = get_headers_language(request)
+        language_header, error, has_error = get_headers_language(request)
 
         if has_error:
             return error
 
-        companies = self.get_list(language_obj)
+        companies = self.get_list(language_header)
         serializer = CompanyNameListSerializers(companies, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -46,7 +39,7 @@ class CompanyListView(views.APIView):
             새로운 회사 등록
         """
         # request.headers 'x-wanted-language' 값과 맞는 language object 검색 후 예외처리
-        language, language_obj, error, has_error = get_headers_language(request)
+        language_header, error, has_error = get_headers_language(request)
 
         if has_error:
             return error
@@ -67,7 +60,6 @@ class CompanyListView(views.APIView):
                     with transaction.atomic():
                         # 1. 새로운 company 등록
                         company_id = Company.objects.latest('id').id
-                        print('company_id:', company_id)
 
                         company = Company(id=company_id + 1)
                         company.save()
@@ -80,9 +72,9 @@ class CompanyListView(views.APIView):
                             company_name.save()
 
                             CompanyName.objects.filter(language=language).latest('company')\
-                                .tags.add(*self.get_tag_list(tag_dict[key]))
+                                .tags.add(*get_tag_list(tag_dict[key]))
 
-                        company = CompanyName.objects.filter(company=latest_company, language=language_obj).first()
+                        company = CompanyName.objects.filter(company=latest_company, language=language_header).first()
                         serializer = CompanyNameListSerializers(company)
 
                         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -102,12 +94,12 @@ class CompanyRetrieveView(views.APIView):
 
     def get(self, request, name):
         """
-            api/companies/<str:name>
+            GET api/companies/<str:name>
             회사 이름으로 회사 검색
         """
 
         # request.headers 'x-wanted-language' 값과 맞는 language object 검색 후 예외처리
-        language, language_obj, error, has_error = get_headers_language(request)
+        language_header, error, has_error = get_headers_language(request)
 
         if has_error:
             return error
@@ -117,7 +109,7 @@ class CompanyRetrieveView(views.APIView):
 
         # request.headers로 넘어온 언어에 맞는 company 검색
         company_obj = company.company
-        search_company = CompanyName.objects.filter(company=company_obj, language=language_obj).first()
+        search_company = CompanyName.objects.filter(company=company_obj, language=language_header).first()
         serializer = self.serializer_class(search_company)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -133,13 +125,13 @@ class CompanyAutoCompleteView(views.APIView):
         """
 
         # request.headers 'x-wanted-language' 값과 맞는 language object 검색 후 예외처리
-        language, language_obj, error, has_error = get_headers_language(request)
+        language_header, error, has_error = get_headers_language(request)
 
         if has_error:
             return error
 
         request_query = request.query_params.get('query', None)
-        query = Q(language=language_obj)
+        query = Q(language=language_header)
 
         if request_query:
             query &= Q(name__icontains=request_query)
