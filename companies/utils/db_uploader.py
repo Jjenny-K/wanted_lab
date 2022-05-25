@@ -9,14 +9,18 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", 'config.settings')
 django.setup()
 
 from django.conf import settings
-from companies.models import Company, Tag, Language, CompanyKeyVal, TagKeyVal
+from companies.models import Company, Tag, Language, CompanyName
 
 # db upload path
 base_path = settings.DATA_ROOT
 csv_path = base_path + 'wanted_temp_data.csv'
 
-# companies.Language
+
 def insert_language():
+    """
+        # companies.Language
+        csv 파일 내 language 'ko', 'en', 'ja' insert
+    """
     data = {
         'name': [
             'ko', 'en', 'ja'
@@ -27,9 +31,8 @@ def insert_language():
     }
 
     Language.objects.all().delete()
-    length = len(data['name'])
 
-    for idx in range(length):
+    for idx in range(len(data['name'])):
         Language.objects.get_or_create(
             name=data['name'][idx],
             description=data['description'][idx]
@@ -38,66 +41,101 @@ def insert_language():
     print("Language UPLOADED SUCCESS!")
 
 
-# tag_name split to list
+def get_language():
+    """ language object """
+    language_ko = Language.objects.get(name='ko')
+    language_en = Language.objects.get(name='en')
+    language_jp = Language.objects.get(name='ja')
+
+    return language_ko, language_en, language_jp
+
+
+def insert_tags():
+    """
+        # companies.Tag
+        csv 파일 내 tag list 0 - 30 '태그_', 'tag_', 'タグ_' insert
+    """
+    Tag.objects.all().delete()
+
+    language_ko, language_en, language_ja = get_language()
+
+    for idx in range(1, 31):
+        str_idx = str(idx)
+
+        Tag.objects.get_or_create(
+            language=language_ko,
+            name='태그_' + str_idx
+        )
+        Tag.objects.get_or_create(
+            language=language_en,
+            name='tag_' + str_idx
+        )
+        Tag.objects.get_or_create(
+            language=language_ja,
+            name='タグ_' + str_idx
+        )
+
+    print("Tag UPLOADED SUCCESS!")
+
+
 def set_list(data):
+    """ tag_name split to list """
     return data.split('|')
 
 
-# companies.Company + CompanyKeyVal + Tag + TagKeyVal
+def get_tag(data):
+    """ tag object """
+    tag_list = []
+    for idx, value in enumerate(set_list(data)):
+        tag_list.append(Tag.objects.get(name=value))
+
+    return tag_list
+
+
 def insert_company():
+    """
+        # companies.Company + CompanyName
+    """
     with open(csv_path, newline="", encoding="utf-8") as csvfile:
         data_reader = csv.DictReader(csvfile)
 
         Company.objects.all().delete()
-        CompanyKeyVal.objects.all().delete()
+        CompanyName.objects.all().delete()
 
-        language_id_ko = Language.objects.get(name='ko')
-        language_id_en = Language.objects.get(name='en')
-        language_id_jp = Language.objects.get(name='ja')
+        language_ko, language_en, language_ja = get_language()
 
-        for row in data_reader:
+        for idx, row in enumerate(data_reader):
             if row['company_ko'] or row['company_en'] or row['company_ja']:
-                Company.objects.get_or_create()
+                Company.objects.get_or_create(
+                    id=idx + 1
+                )
 
-                company_number = Company.objects.latest('number')
-                print(company_number)
-                CompanyKeyVal.objects.get_or_create(
-                    number=company_number,
-                    language=language_id_ko,
+                company_id = Company.objects.latest('id')
+                CompanyName.objects.get_or_create(
+                    company=company_id,
+                    language=language_ko,
                     name=row['company_ko']
                 )
-                CompanyKeyVal.objects.get_or_create(
-                    number=company_number,
-                    language=language_id_en,
+                CompanyName.objects.get_or_create(
+                    company=company_id,
+                    language=language_en,
                     name=row['company_en']
                 )
-                CompanyKeyVal.objects.get_or_create(
-                    number=company_number,
-                    language=language_id_jp,
+                CompanyName.objects.get_or_create(
+                    company=company_id,
+                    language=language_ja,
                     name=row['company_ja']
                 )
 
-                Tag.objects.get_or_create(company_num=company_number)
-                tag_number = Tag.objects.latest('number')
-
-                TagKeyVal.objects.get_or_create(
-                    number=tag_number,
-                    language=language_id_ko,
-                    name=set_list(row['tag_ko'])
-                )
-                TagKeyVal.objects.get_or_create(
-                    number=tag_number,
-                    language=language_id_en,
-                    name=set_list(row['tag_en'])
-                )
-                TagKeyVal.objects.get_or_create(
-                    number=tag_number,
-                    language=language_id_jp,
-                    name=set_list(row['tag_ja'])
-                )
+                # ManyToManyField 'tags' insert
+                # CompanyName, Tag 사이의 중간테이블에 .add()로 tag data 추가
+                CompanyName.objects.filter(language=language_ko).latest('company').tags.add(*get_tag(row['tag_ko']))
+                CompanyName.objects.filter(language=language_en).latest('company').tags.add(*get_tag(row['tag_en']))
+                CompanyName.objects.filter(language=language_ja).latest('company').tags.add(*get_tag(row['tag_ja']))
 
     print("Company Info UPLOADED SUCCESS!")
 
 
-# insert_language()
+insert_language()
+insert_tags()
 insert_company()
