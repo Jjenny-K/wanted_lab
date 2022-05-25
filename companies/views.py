@@ -8,7 +8,7 @@ from rest_framework import views, status
 from rest_framework.response import Response
 
 from companies.models import Company, Language, Tag, CompanyName
-from companies.serializers import CompanyNameListSerializers
+from companies.serializers import CompanyNameListSerializers, CompanyNameAutoCompleteSerializers
 from companies.utils import *
 
 
@@ -119,5 +119,32 @@ class CompanyRetrieveView(views.APIView):
         company_obj = company.company
         search_company = CompanyName.objects.filter(company=company_obj, language=language_obj).first()
         serializer = self.serializer_class(search_company)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CompanyAutoCompleteView(views.APIView):
+    serializer_class = CompanyNameAutoCompleteSerializers
+
+    def get(self, request):
+        """
+            GET api/search?query=...
+            회사 이름으로 회사 검색
+        """
+
+        # request.headers 'x-wanted-language' 값과 맞는 language object 검색 후 예외처리
+        language, language_obj, error, has_error = get_headers_language(request)
+
+        if has_error:
+            return error
+
+        request_query = request.query_params.get('query', None)
+        query = Q(language=language_obj)
+
+        if request_query:
+            query &= Q(name__icontains=request_query)
+
+        companies = CompanyName.objects.filter(query)
+        serializer = self.serializer_class(companies, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
