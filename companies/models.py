@@ -8,7 +8,8 @@ class Company(models.Model):
 
 
 class Tag(models.Model):
-    name = models.CharField(verbose_name='태그', max_length=20)
+    language = models.ForeignKey('companies.Language', verbose_name='언어', on_delete=models.CASCADE)
+    name = models.CharField(verbose_name='태그', max_length=20, unique=True)
     description = models.CharField(verbose_name='태그설명', max_length=127, blank=True, default='')
 
     def __str__(self):
@@ -27,7 +28,7 @@ class CompanyName(models.Model):
     company = models.ForeignKey('companies.Company', verbose_name='회사', on_delete=models.CASCADE)
     language = models.ForeignKey('companies.Language', verbose_name='언어', on_delete=models.CASCADE)
     name = models.CharField(verbose_name='회사명', max_length=255, blank=True, default='')
-    tags = models.ManyToManyField('Tag', verbose_name='태그')
+    tags = models.ManyToManyField('Tag', verbose_name='태그', blank=True, default='')
 
     def __str__(self):
         return f'company_name({self.company}, {self.name})'
