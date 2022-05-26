@@ -3,7 +3,7 @@ from companies.views import CompanyListView, CompanyRetrieveView, CompanyAutoCom
 
 
 urlpatterns = [
-    path('companies', CompanyListView.as_view()),
-    path('companies/<str:name>', CompanyRetrieveView.as_view()),
-    path('search', CompanyAutoCompleteView.as_view()),
+    path('companies', CompanyListView.as_view(), name='companies_list'),
+    path('companies/<str:name>', CompanyRetrieveView.as_view(), name='companies_retrieve'),
+    path('search', CompanyAutoCompleteView.as_view(), name='companies_search'),
 ]
