@@ -1,0 +1,40 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - static-data:/static
+    depends_on:
+      - web
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    volumes:
+      - static-data:/wanted_lab/static
+    depends_on:
+      - db
+    networks:
+      subnet:
+
+db:
+  image: postgres
+  ports:
+    - "5432:5432"
+  env_file:
+    - ./.env
+  networks:
+    - subnet
+
+volumes:
+  static-data:
+
+networks:
+  subnet:
+    driver: bridge
