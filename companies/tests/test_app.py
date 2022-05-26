@@ -1,4 +1,5 @@
 import pytest
+import json
 
 from django.urls import reverse
 
@@ -32,6 +33,36 @@ class Test_CompanyNameAPI:
                 "tag_name": {
                     "ko": "태그_15",
                     "tw": "tag_15",
+                    "en": "tag_15",
+                }
+            }
+        ]
+    }
+    post_data = {
+        "company_name": {
+            "ko": "라인 프레쉬",
+            "ja": "LINE FRESH",
+            "en": "LINE FRESH",
+        },
+        "tags": [
+            {
+                "tag_name": {
+                    "ko": "태그_1",
+                    "ja": "tag_1",
+                    "en": "tag_1",
+                }
+            },
+            {
+                "tag_name": {
+                    "ko": "태그_8",
+                    "ja": "tag_8",
+                    "en": "tag_8",
+                }
+            },
+            {
+                "tag_name": {
+                    "ko": "태그_15",
+                    "ja": "tag_15",
                     "en": "tag_15",
                 }
             }
@@ -93,6 +124,25 @@ class Test_CompanyNameAPI:
         """
         list_url = reverse('companies_list')
 
-        response_header_tw = client.post(list_url, json=self.post_data_tw, **{"HTTP_x-wanted-language": "tw"})
+        # response_header_tw = client.post(list_url, json=self.post_data_tw, **{"HTTP_x-wanted-language": "tw"})
+        #
+        # assert response_header_tw.status_code == 400
 
-        assert response_header_tw.status_code == 400
+        headers_post = {
+            'CONTENT_TYPE': 'application/json;charset=UTF-8',
+            'HTTP_x-wanted-language': 'en'
+        }
+
+        response_header_en = client.post(list_url, body=json.dumps(self.post_data), **headers_post)
+        company = response_header_en.data
+
+        assert response_header_en.status_code == 201
+        assert company == {
+            "company_name": "LINE FRESH",
+            "tags": [
+                "tag_1",
+                "tag_8",
+                "tag_15",
+            ],
+        }
+
