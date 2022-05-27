@@ -23,14 +23,14 @@ services:
     networks:
       subnet:
 
-db:
-  image: postgres
-  ports:
-    - "5432:5432"
-  env_file:
-    - ./.env
-  networks:
-    - subnet
+  db:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./.env
+    networks:
+      - subnet
 
 volumes:
   static-data:
