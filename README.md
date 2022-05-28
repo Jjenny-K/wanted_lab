@@ -24,7 +24,7 @@
     -   유연한 확장과 성능을 고려한 설계 및 구현
     -   [x] 제공되는 test case 통과 필요
     -   [x] ORM 사용 구현 및 JSON 형식 결과 도출
-    -   [ ] API 명세
+    -   [x] API 명세
 -   Bonus points
     -   [ ] Dockerize
 
@@ -41,6 +41,7 @@
 <img src="./source/wanted_lab_erd.png" alt="erd"/>
 
 > ### API Specification
+[GoTo](https://documenter.getpostman.com/view/20879074/Uz5CKcxQ)
 
 > ### Step to run
 ```
