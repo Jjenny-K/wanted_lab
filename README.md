@@ -1,7 +1,7 @@
 # Personal Tasks _ Wanted Lab
 원티드 프리온보딩 코스 _ 개인과제 _ 원티드 랩
 
-### Deploy GoTo
+### Deploy [GoTo](http://43.200.14.209/api/companies)
 
 ### Progress check [GoTo](https://round-locust-fc4.notion.site/wanted_lab-c118dc7316014055a311c1c38823d227)
 - 요구사항 분석, 정보 기록 및 프로젝트 진행을 위해 사용
@@ -26,7 +26,7 @@
     -   [x] ORM 사용 구현 및 JSON 형식 결과 도출
     -   [x] API 명세
 -   Bonus points
-    -   [ ] Dockerize
+    -   [x] Dockerize
 
 ## Implementation
 
@@ -54,9 +54,6 @@ $ python install -r requirements.txt
 $ python manage.py migrate --settings=config.settings.develop
 $ python manage.py runserver --settings=config.settings.develop
 ```
-
-## Trouble Shooting
-
 
 ## Author
 All of development : :monkey_face: **Kang Jeonghui**
