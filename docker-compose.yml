@@ -5,10 +5,12 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx:/etc/nginx/conf.d
+      - ./nginx/conf.d:/etc/nginx/conf.d
       - static-data:/static
     depends_on:
       - web
+    networks:
+      - subnet
 
   web:
     build:
@@ -21,9 +23,10 @@ services:
     depends_on:
       - db
     networks:
-      subnet:
+      - subnet
 
   db:
+    restart: always
     image: postgres:latest
     ports:
       - "5432:5432"

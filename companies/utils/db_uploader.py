@@ -4,7 +4,7 @@ import django
 import csv
 
 # system setup
-sys.path.append((os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath((__file__))))))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", 'config.settings.develop')
 django.setup()
 
