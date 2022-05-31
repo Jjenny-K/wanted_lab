@@ -17,7 +17,7 @@ RUN pip install psycopg2
 
 RUN python3 manage.py migrate --settings=config.settings.deploy
 RUN python3 manage.py collectstatic --settings=config.settings.deploy
-RUN python3 companies\utils\db_uploader.py
+RUN python3 companies/utils/db_uploader.py
 
 EXPOSE 8000
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "config.wsgi.deploy:application"]
