@@ -34,8 +34,8 @@
 <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=Python&logoColor=white"/> <img src="https://img.shields.io/badge/Django-092E20?style=flat-square&logo=Django&logoColor=white"/> <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=PostgreSQL&logoColor=white"/> <img src="https://img.shields.io/badge/PyCharm-000000?style=flat-square&logo=PyCharm&logoColor=white"/> <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white"/> <img src="https://img.shields.io/badge/AWS EC2-232F3E?style=flat-square&logo=Amazon AWS&logoColor=white"/>
 
 ### Development Period
-- 2022.05.23 - 2022.05.26
-- 주요 기능 구현 72시간
+- 2022.05.23 - 2022.05.26 (주요 기능 구현 72시간)
+- 2022.07.19 (코드 리뷰 및 리팩토링)
 
 > ### ERD
 <img src="./source/wanted_lab_erd.png" alt="erd"/>
