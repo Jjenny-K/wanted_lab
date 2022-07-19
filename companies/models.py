@@ -7,18 +7,18 @@ class Company(models.Model):
         return f'company_({self.id})'
 
 
-class Tag(models.Model):
-    language = models.ForeignKey('companies.Language', verbose_name='언어', on_delete=models.CASCADE)
-    name = models.CharField(verbose_name='태그', max_length=20, unique=True)
-    description = models.CharField(verbose_name='태그설명', max_length=127, blank=True, default='')
+class Language(models.Model):
+    name = models.CharField(verbose_name='언어', max_length=20)
+    description = models.CharField(verbose_name='언어설명', max_length=127)
 
     def __str__(self):
         return self.name
 
 
-class Language(models.Model):
-    name = models.CharField(verbose_name='언어', max_length=20)
-    description = models.CharField(verbose_name='언어설명', max_length=127)
+class Tag(models.Model):
+    language = models.ForeignKey('companies.Language', verbose_name='언어', on_delete=models.CASCADE)
+    name = models.CharField(verbose_name='태그', max_length=20, unique=True)
+    description = models.CharField(verbose_name='태그설명', max_length=127, blank=True, default='')
 
     def __str__(self):
         return self.name

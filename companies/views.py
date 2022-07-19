@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from companies.models import Company, Language, CompanyName
 from companies.serializers import CompanyNameListSerializers, CompanyNameAutoCompleteSerializers
-from companies.utils import *
+from companies.utils import get_headers_language, get_tag_list
 
 
 class CompanyListView(views.APIView):
@@ -22,9 +22,9 @@ class CompanyListView(views.APIView):
             회사 리스트 검색
         """
         # request.headers 'x-wanted-language' 값과 맞는 language object 검색 후 예외처리
-        language_header, error, has_error = get_headers_language(request)
+        language_header, error = get_headers_language(request)
 
-        if has_error:
+        if language_header is None:
             return error
 
         companies = self.get_list(language_header)
@@ -32,16 +32,15 @@ class CompanyListView(views.APIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @transaction.atomic(using='default')
     def post(self, request):
         """
             POST api/companies
             새로운 회사 등록
         """
         # request.headers 'x-wanted-language' 값과 맞는 language object 검색 후 예외처리
-        language_header, error, has_error = get_headers_language(request)
+        language_header, error = get_headers_language(request)
 
-        if has_error:
+        if language_header is None:
             return error
 
         try:
@@ -59,31 +58,30 @@ class CompanyListView(views.APIView):
                 try:
                     with transaction.atomic():
                         # 1. 새로운 company 등록
-                        company_id = Company.objects.latest('id').id
-
-                        company = Company(id=company_id + 1)
-                        company.save()
+                        latest_company = Company.objects.latest('id')
+                        Company(id=latest_company.id + 1).save()
 
                         # 2. 새로 생성된 company와 연관된 company_name 정보 등록
                         latest_company = Company.objects.latest('id')
                         for key, val in request['company_name'].items():
                             language = Language.objects.get(name=key)
-                            company_name = CompanyName(company=latest_company, language=language, name=val)
-                            company_name.save()
+                            CompanyName(company=latest_company, language=language, name=val).save()
 
-                            CompanyName.objects.filter(language=language).latest('company')\
+                            CompanyName.objects.filter(language=language).latest('company') \
                                 .tags.add(*get_tag_list(tag_dict[key]))
 
-                        company = CompanyName.objects.filter(company=latest_company, language=language_header).first()
-                        serializer = CompanyNameListSerializers(company)
+                    # 3. 저장된 company 정보 중 header에 입력된 언어에 해당하는 정보 반환
+                    result_company = CompanyName.objects\
+                        .filter(company=latest_company, language=language_header).first()
+                    serializer = CompanyNameListSerializers(result_company)
 
-                        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
 
                 except Exception as e:
                     return Response({'error message': '지원하지 않는 언어가 입력되었습니다.'}, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            return Response({'error message': '형식에 맞지않는 요청이 입력되었습니다.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error message': '%s, 형식에 맞지않는 요청이 입력되었습니다.' % e}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CompanyRetrieveView(views.APIView):
@@ -99,9 +97,9 @@ class CompanyRetrieveView(views.APIView):
         """
 
         # request.headers 'x-wanted-language' 값과 맞는 language object 검색 후 예외처리
-        language_header, error, has_error = get_headers_language(request)
+        language_header, error = get_headers_language(request)
 
-        if has_error:
+        if language_header is None:
             return error
 
         # name 값과 맞는 company name object 검색 후 없다면 404 error 반환
@@ -125,9 +123,9 @@ class CompanyAutoCompleteView(views.APIView):
         """
 
         # request.headers 'x-wanted-language' 값과 맞는 language object 검색 후 예외처리
-        language_header, error, has_error = get_headers_language(request)
+        language_header, error = get_headers_language(request)
 
-        if has_error:
+        if language_header is None:
             return error
 
         request_query = request.query_params.get('query', None)
